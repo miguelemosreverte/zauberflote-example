@@ -24,26 +24,35 @@ defmodule ExampleApp.Router do
       validate amount > 0, "Amount must be positive"
       validate currency != "", "Currency required"
 
-      rates = %{
-        "EUR" => 0.9
-      }
 
-      rate = rates[currency]
+      case :httpc.request("https://open.er-api.com/v6/latest/USD") do 
+        {:ok, {{_, 200, _}, _, body}} -> 
+          data = Jason.decode!(body)
+          rates = data["rates"]
 
-      converted = amount * rate
+      
+          rate = rates[currency] 
 
-      id = DB.create(:conversions, %{
-        amount_usd: amount, 
-        target_currency: currency,
-        exchange_rate: rate,
-        converted_amount: converted  
-      })
+          converted = amount * rate
 
-      %{id: id, 
-        amount_usd: amount, 
-        target_currency: currency,
-        exchange_rate: rate,
-        converted_amount: converted  
-      }
+          id = DB.create(:conversions, %{
+            amount_usd: amount, 
+            target_currency: currency,
+            exchange_rate: rate,
+            converted_amount: converted  
+          })
+
+          ok(%{id: id, 
+            amount_usd: amount, 
+            target_currency: currency,
+            exchange_rate: rate,
+            converted_amount: converted  
+          })
+        {:ok, {{_, status, _}, _, _}} ->
+          halt 502, "Api request failed with status"
+
+        {:error, reason} ->
+          halt 502, "Api request failed"
+      end
   end
 end
