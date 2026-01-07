@@ -13,19 +13,30 @@
     import ui from "https://unpkg.com/zauberflote@latest/src/ui.js";
 
     ui.app("Notes")
-      .blurb("A simple note-taking app built with Zauberflöte")
+      .blurb("A simple currency converter app built with Zauberflöte")
 
-      .section("New Note")
+      .section("New currency conversion")
         .action("Add")
-          .post("/notes")
-          .field("content", "", "text", "Write your note...")
+          .post("/convert")
+          .fields(
+            { 
+              "amount": {"type": "string", "value": "EUR"}, 
+              "currency": {
+                type: "select",
+                label: "Target Currency",
+                options: [
+                  { value: "EUR", label: "EUR - EURO"},
+                  { value: "GBP", label: "GBP - British Pound"},
+                ]
+              }
+            })
           .refreshAll()
           .end()
         .end()
 
-      .section("Notes")
-        .read("/notes")
-        .list("{{content}}")
+      .section("Conversion History")
+        .read("/conversions")
+        .list("{{amount_usd}} USD => {{converted_amount}} {{target_currency}} (Rate: {{exchange_rate}})")
         .end()
 
       .mount();
