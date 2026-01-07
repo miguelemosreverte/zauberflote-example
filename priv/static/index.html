@@ -4,63 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <title>Zauberflote Example App</title>
+  <title>Notes App</title>
 </head>
 <body>
   <div id="app"></div>
 
   <script type="module">
-    // Import from NPM via CDN (production)
     import ui from "https://unpkg.com/zauberflote@latest/src/ui.js";
 
-    ui.app("Example App")
-      .blurb("A standalone Zauberflote application using production libraries")
+    ui.app("Notes")
+      .blurb("A simple note-taking app built with Zauberflöte")
 
-      .section("Create Item")
-        .action("Add Item")
-          .post("/api/items")
-          .fields({
-            name: { type: "text", placeholder: "Item name" },
-            status: {
-              type: "select",
-              value: "pending",
-              options: [
-                { value: "pending", label: "Pending" },
-                { value: "active", label: "Active" },
-                { value: "done", label: "Done" }
-              ]
-            }
-          })
+      .section("New Note")
+        .action("Add")
+          .post("/notes")
+          .field("content", "", "text", "Write your note...")
           .refreshAll()
           .end()
         .end()
 
-      .section("Items")
-        .read("/api/items")
-        .kpis([
-          { label: "Total", compute: d => d.length },
-          { label: "Active", compute: d => d.filter(i => i.status === "active").length },
-          { label: "Done", compute: d => d.filter(i => i.status === "done").length }
-        ])
-        .list(`
-          <div class="flex justify-between items-center">
-            <span class="font-medium">{{name}}</span>
-            <span class="text-sm px-2 py-1 rounded bg-slate-100">{{status}}</span>
-          </div>
-        `)
-        .rowAction("Edit")
-          .put("/api/items/{{id}}")
-          .fields({
-            name: { type: "text", value: "{{name}}" },
-            status: { type: "select", value: "{{status}}", options: ["pending", "active", "done"] }
-          })
-          .refreshAll()
-          .end()
-        .rowAction("Delete")
-          .del("/api/items/{{id}}")
-          .confirm("Delete this item?")
-          .refreshAll()
-          .end()
+      .section("Notes")
+        .read("/notes")
+        .list("{{content}}")
         .end()
 
       .mount();
